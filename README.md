@@ -1,13 +1,5 @@
 # NotEnoughItems Unofficial
 
-A continuation of NotEnoughItems for 1.7.10 by the developers of Gregtech: New Horizons modpack, with features either inspired and/or backported from JustEnoughItems
-
- 
-
-We've tested this against all of the mods included in GTNH, as well as a limited set of other mods (like Reika's mods).  Every effort has been made to maintain backwards compatibility, however the focus is on the mods contained in the GTNH modpack.
-
- 
-
 ## New Features:
 
 * Speed - Uses a parallel stream to search the item list over multiple cores, resulting in 2-6x faster searches on average [Feels instantaneous]
