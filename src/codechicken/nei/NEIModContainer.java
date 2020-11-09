@@ -4,16 +4,15 @@ import codechicken.core.CommonUtils;
 import codechicken.core.launch.CodeChickenCorePlugin;
 import codechicken.nei.api.IConfigureNEI;
 import codechicken.nei.asm.NEICorePlugin;
+import codechicken.nei.recipe.ShapedRecipeHandler;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import cpw.mods.fml.client.FMLFileResourcePack;
 import cpw.mods.fml.client.FMLFolderResourcePack;
-import cpw.mods.fml.common.DummyModContainer;
-import cpw.mods.fml.common.LoadController;
-import cpw.mods.fml.common.MetadataCollection;
-import cpw.mods.fml.common.ModMetadata;
+import cpw.mods.fml.common.*;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.versioning.ArtifactVersion;
 import cpw.mods.fml.common.versioning.VersionParser;
 import cpw.mods.fml.common.versioning.VersionRange;
@@ -90,6 +89,12 @@ public class NEIModContainer extends DummyModContainer
             ClientHandler.load();
 
         ServerHandler.load();
+    }
+
+    @Mod.EventHandler
+    public void onServerStarting(FMLServerStartingEvent aEvent) {
+        ShapedRecipeHandler.recipesMap.clear();
+        ShapedRecipeHandler.usesMap.clear();
     }
 
     @Override

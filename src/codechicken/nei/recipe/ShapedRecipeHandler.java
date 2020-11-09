@@ -5,10 +5,7 @@ import codechicken.nei.NEIClientConfig;
 import codechicken.nei.NEIClientUtils;
 import codechicken.nei.NEIServerUtils;
 import codechicken.nei.PositionedStack;
-import codechicken.nei.api.DefaultOverlayRenderer;
-import codechicken.nei.api.IOverlayHandler;
-import codechicken.nei.api.IRecipeOverlayRenderer;
-import codechicken.nei.api.IStackPositioner;
+import codechicken.nei.api.*;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.gui.inventory.GuiCrafting;
 import net.minecraft.inventory.Container;
@@ -20,7 +17,9 @@ import net.minecraftforge.oredict.ShapedOreRecipe;
 
 import java.awt.Rectangle;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ShapedRecipeHandler extends TemplateRecipeHandler
 {
@@ -72,6 +71,10 @@ public class ShapedRecipeHandler extends TemplateRecipeHandler
         }
     }
 
+    public static Map<GT_NEIItemStack, List<IRecipe>> recipesMap = new HashMap<>();
+    public static Map<GT_NEIItemStack, List<IRecipe>> usesMap = new HashMap<>();
+
+
     @Override
     public void loadTransferRects() {
         transferRects.add(new RecipeTransferRect(new Rectangle(84, 23, 24, 18), "crafting"));
@@ -110,7 +113,12 @@ public class ShapedRecipeHandler extends TemplateRecipeHandler
 
     @Override
     public void loadCraftingRecipes(ItemStack result) {
-        for (IRecipe irecipe : (List<IRecipe>) CraftingManager.getInstance().getRecipeList()) {
+        if (recipesMap.isEmpty())
+            fillCraftingMap();
+        List<IRecipe> recipes =  recipesMap.get(new GT_NEIItemStack(result));
+        if (recipes == null)
+            return;
+        for (IRecipe irecipe :recipes) {
             if (NEIServerUtils.areStacksSameTypeCrafting(irecipe.getRecipeOutput(), result)) {
                 CachedShapedRecipe recipe = null;
                 if (irecipe instanceof ShapedRecipes)
@@ -127,8 +135,8 @@ public class ShapedRecipeHandler extends TemplateRecipeHandler
         }
     }
 
-    @Override
-    public void loadUsageRecipes(ItemStack ingredient) {
+    private void fillUsageMap() {
+        usesMap.clear();
         for (IRecipe irecipe : (List<IRecipe>) CraftingManager.getInstance().getRecipeList()) {
             CachedShapedRecipe recipe = null;
             if (irecipe instanceof ShapedRecipes)
@@ -136,14 +144,62 @@ public class ShapedRecipeHandler extends TemplateRecipeHandler
             else if (irecipe instanceof ShapedOreRecipe)
                 recipe = forgeShapedRecipe((ShapedOreRecipe) irecipe);
 
-            if (recipe == null || !recipe.contains(recipe.ingredients, ingredient.getItem()))
+            if (recipe == null)
                 continue;
 
             recipe.computeVisuals();
-            if (recipe.contains(recipe.ingredients, ingredient)) {
-                recipe.setIngredientPermutation(recipe.ingredients, ingredient);
-                arecipes.add(recipe);
+            for (PositionedStack input : recipe.ingredients) {
+                putInMap(irecipe, input, usesMap);
             }
+        }
+    }
+
+    private void fillCraftingMap() {
+        recipesMap.clear();
+        for (IRecipe irecipe : (List<IRecipe>) CraftingManager.getInstance().getRecipeList()) {
+            CachedShapedRecipe recipe = null;
+            if (irecipe instanceof ShapedRecipes)
+                recipe = new CachedShapedRecipe((ShapedRecipes) irecipe);
+            else if (irecipe instanceof ShapedOreRecipe)
+                recipe = forgeShapedRecipe((ShapedOreRecipe) irecipe);
+
+            if (recipe == null)
+                continue;
+
+            recipe.computeVisuals();
+            putInMap(irecipe, recipe.result, recipesMap);
+        }
+    }
+
+    private void putInMap(IRecipe aActualRecipe, PositionedStack aStack, Map<GT_NEIItemStack, List<IRecipe>> aOutputRecipes) {
+        for (ItemStack t : aStack.items) {
+            List<IRecipe> r = aOutputRecipes.get(new GT_NEIItemStack(t));
+            if (r == null)
+                r = new ArrayList<>();
+            if (!r.contains(aActualRecipe))
+                r.add(aActualRecipe);
+            aOutputRecipes.put(new GT_NEIItemStack(t), r);
+        }
+    }
+
+    @Override
+    public void loadUsageRecipes(ItemStack ingredient) {
+        if (usesMap.isEmpty())
+            fillUsageMap();
+        List<IRecipe> recipes =  usesMap.get(new GT_NEIItemStack(ingredient));
+        if (recipes == null)
+            return;
+       for (IRecipe irecipe : recipes) {
+            CachedShapedRecipe recipe = null;
+            if (irecipe instanceof ShapedRecipes)
+                recipe = new CachedShapedRecipe((ShapedRecipes) irecipe);
+            else if (irecipe instanceof ShapedOreRecipe)
+                recipe = forgeShapedRecipe((ShapedOreRecipe) irecipe);
+            if (recipe == null || !recipe.contains(recipe.ingredients, ingredient.getItem()))
+                continue;
+            recipe.computeVisuals();
+            recipe.setIngredientPermutation(recipe.ingredients, ingredient);
+            arecipes.add(recipe);
         }
     }
 
