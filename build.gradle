@@ -41,6 +41,7 @@ configFile.withReader {
 dependencies {
     compile "codechicken:CodeChickenLib:${config.mc_version}-${config.ccl_version}:dev"
     compile "codechicken:CodeChickenCore:${config.mc_version}-${config.ccc_version}:dev"
+    compile fileTree(dir: 'libs', include: '*.jar')
 }
 
 version =  "${project.config.mod_version}"
