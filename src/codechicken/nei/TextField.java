@@ -103,8 +103,10 @@ public abstract class TextField extends Widget
 
     public void setText(String s) {
         String oldText = text();
+        int cursor = field.getCursorPosition();
         field.setText(s);
-        field.setCursorPositionZero();
+        field.setCursorPosition(cursor);
+//        field.setCursorPositionZero();
         onTextChange(oldText);
     }
 

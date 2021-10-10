@@ -141,8 +141,8 @@ public class ItemPanel extends Widget {
 
     public int getHightAdjustment() {
         int hAdj = 0;
-        if (!canPerformAction("item"))
-            hAdj += 15;
+//        if (!canPerformAction("item"))
+//            hAdj += 15;
         return hAdj;
     }
 

@@ -1,7 +1,6 @@
 package codechicken.nei;
 
-public class ItemQuantityField extends TextField
-{
+public class ItemQuantityField extends TextField {
     public ItemQuantityField(String ident) {
         super(ident);
         centered = true;
@@ -33,12 +32,19 @@ public class ItemQuantityField extends TextField
 
     @Override
     public void loseFocus() {
-        setText(Integer.toString(NEIClientConfig.getItemQuantity()));
+        setText(Integer.toString(intValue()));
     }
+
+    boolean req = false;
 
     @Override
     public void onTextChange(String oldText) {
-        if (intValue(oldText) != intValue())//hacky recursion stopper
-            NEIClientUtils.setItemQuantity(intValue());
+//        if (intValue(oldText) != intValue())//hacky recursion stopper // hackly solution does not work, stupid strait solution works
+        if (req) {
+            return;
+        }
+        req = true;
+        NEIClientUtils.setItemQuantity(intValue());
+        req = false;
     }
 }
